@@ -4,10 +4,15 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.yeditepe.security.cipher.AesCtr;
 import org.yeditepe.security.cipher.AesGcm;
 import org.yeditepe.security.utils.CryptoUtils;
+import org.yeditepe.security.utils.FileUtils;
 
 import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -29,7 +34,26 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
+        File clearmsg = FileUtils.getBook();
+        byte[] block = new byte[16];
+        try {
+            FileInputStream fis = new FileInputStream(clearmsg);
 
+            System.out.println("Total file size to read (in bytes) : "
+                    + fis.available());
+
+            int name = 1 ;
+            while ((fis.read(block)) != -1) {
+
+                String s = new String(block, UTF_8);
+                System.out.println(s);
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        /*
         String OUTPUT_FORMAT = "%-30s:%s";
 
         String pText = "Hello World AES-GCM, Welcome to Cryptography!";
@@ -59,7 +83,7 @@ public class Main {
         String decryptedText = AesGcm.decryptWithPrefixIV(encryptedText, secretKey);
         System.out.println(String.format(OUTPUT_FORMAT, "Decrypted (plain text)", decryptedText));
 
-        /*
+
         byte[] key = Bytes.toBytes("1234567890123456");
         try
         {
