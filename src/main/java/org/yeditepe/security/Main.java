@@ -25,7 +25,6 @@ import static org.yeditepe.security.cipher.AesGcm.*;
 
 public class Main {
 
-
     public static void printArray(byte[] arr)
     {
         for (byte b : arr) System.out.print(b + " ");
@@ -34,24 +33,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        File clearmsg = FileUtils.getBook();
-        byte[] block = new byte[16];
-        try {
-            FileInputStream fis = new FileInputStream(clearmsg);
-
-            System.out.println("Total file size to read (in bytes) : "
-                    + fis.available());
-
-            int name = 1 ;
-            while ((fis.read(block)) != -1) {
-
-                String s = new String(block, UTF_8);
-                System.out.println(s);
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        System.out.println(System.getProperty("user.dir"));
 
         /*
         String OUTPUT_FORMAT = "%-30s:%s";
