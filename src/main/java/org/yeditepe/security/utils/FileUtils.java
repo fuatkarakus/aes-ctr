@@ -81,6 +81,11 @@ public class FileUtils {
         return line;
     }
 
+    public static List<String> getLineAsList(String str) {
+        return Stream.of(str.split(">", -1))
+                .collect(Collectors.toList());
+    }
+
     public static String getSize(){
         String size = "";
         try (Stream<String> lines = Files.lines(Paths.get(CSV), Charset.defaultCharset())) {
@@ -93,7 +98,7 @@ public class FileUtils {
     }
 
     public static String convertToCSV(String[] data) {
-        return Stream.of(data).map(i -> escapeSpecialCharacters(i)).collect(Collectors.joining(","));
+        return Stream.of(data).map(i -> escapeSpecialCharacters(i)).collect(Collectors.joining(">"));
     }
 
     public static String escapeSpecialCharacters(String data) {

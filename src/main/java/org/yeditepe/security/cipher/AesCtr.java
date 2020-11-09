@@ -80,13 +80,12 @@ public class AesCtr {
      * @throws Exception Throws exception if there is no data to encrypt.<br>
      *                   May throw exception based on Javax.Crypto.Cipher class
      */
-    public byte[] encrypt(byte[] data) throws Exception {
+    public byte[] encrypt(byte[] data, byte[] dv) throws Exception {
         // check if there is data to encrypt
         if (data.length == 0) {
             throw new Exception("No data to encrypt");
         }
 
-        // TODO do not create random IV
         // create iv
         byte[] iv = new byte[BLOCK_SIZE_BYTES];
         byte[] randomNumber = (new BigInteger(BLOCK_SIZE_BITS, m_secureRandom)).toByteArray();
@@ -97,10 +96,10 @@ public class AesCtr {
             iv[a] = 0;
 
         // init cipher instance
-        m_cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, m_keySpec, new IvParameterSpec(iv));
+        m_cipher.init(Cipher.ENCRYPT_MODE, m_keySpec, new IvParameterSpec(dv));
 
         // return concatenation of iv + encrypted data
-        return ArrayUtils.addAll(iv, m_cipher.doFinal(data));
+        return ArrayUtils.addAll(dv, m_cipher.doFinal(data));
     }
 
     /**

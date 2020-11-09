@@ -1,108 +1,77 @@
 package org.yeditepe.security;
 
+import org.apache.hadoop.hbase.util.Bytes;
+import org.yeditepe.security.cipher.AesCtr;
 import org.yeditepe.security.utils.FileUtils;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
+
+import static org.yeditepe.security.cipher.AesGcm.UTF_8;
 
 public class Main {
 
-    public static void printArray(byte[] arr) {
-        for (byte b : arr)
-            System.out.print(b + " ");
-        System.out.println();
-    }
-
     public static void main(String[] args) throws Exception {
 
-        System.out.println("Welcome to Cryptography! \n");
-        System.out.println("Hello World AES-GCM ");
-        System.out.println("Start with an encryption ");
-        System.out.println("Pick a number between 1 - " + FileUtils.getSize());
+        // 16 bits secret key
+        byte[] key = Bytes.toBytes("1234567890123456");
+        byte[] iv  = Bytes.toBytes("asdfghjklzxcvbnm"); // should be random
+
+
         Scanner sc = new Scanner(System.in);
+        System.out.println("Welcome to Cryptography! \n");
+        System.out.println("Hello World AES-CTR ");
+        System.out.println("Please select mode between encrypt(1) and decrypt(2)");
         while (!sc.hasNextInt())
             sc.next();
         int num1 = sc.nextInt();
-        System.out.println(FileUtils.getSpesificLine(num1));
 
+        System.out.println("Pick a number between 1 - " + FileUtils.getSize());
 
-        /*
-         * System.out.println("Welcome to Cryptography! \n");
-         * System.out.println("Hello World AES-GCM ");
-         * System.out.println("Start with an encryption "); System.out.println();
-         * System.out.println("Pick a number between 1 - 200.000 ");
-         * 
-         * Scanner sc = new Scanner(System.in); System.out.print("Enter number 1: ");
-         * while (!sc.hasNextInt()) sc.next(); int num1 = sc.nextInt(); int num2;
-         * System.out.print("Enter number 2: "); do { while (!sc.hasNextInt())
-         * sc.next(); num2 = sc.nextInt(); } while (num2 < num1);
-         * System.out.println(num1 + " " + num2);
-         * 
-         * 
-         * String OUTPUT_FORMAT = "%-30s:%s";
-         * 
-         * String pText = "Hello World AES-GCM, Welcome to Cryptography!";
-         * 
-         * // encrypt and decrypt need the same key. // get AES 256 bits (32 bytes) key
-         * SecretKey secretKey = CryptoUtils.getAESKey(AES_KEY_BIT);
-         * 
-         * // encrypt and decrypt need the same IV. // AES-GCM needs IV 96-bit (12
-         * bytes) byte[] iv = CryptoUtils.getRandomNonce(IV_LENGTH_BYTE);
-         * 
-         * byte[] encryptedText = AesGcm.encryptWithPrefixIV(pText.getBytes(UTF_8),
-         * secretKey, iv);
-         * 
-         * System.out.println("\n------ AES GCM Encryption ------");
-         * System.out.println(String.format(OUTPUT_FORMAT, "Input (plain text)",
-         * pText)); System.out.println(String.format(OUTPUT_FORMAT, "Key (hex)",
-         * CryptoUtils.hex(secretKey.getEncoded())));
-         * System.out.println(String.format(OUTPUT_FORMAT, "IV  (hex)",
-         * CryptoUtils.hex(iv))); System.out.println(String.format(OUTPUT_FORMAT,
-         * "Encrypted (hex) ", CryptoUtils.hex(encryptedText)));
-         * System.out.println(String.format(OUTPUT_FORMAT,
-         * "Encrypted (hex) (block = 16)", CryptoUtils.hexWithBlockSize(encryptedText,
-         * 16)));
-         * 
-         * System.out.println("\n------ AES GCM Decryption ------");
-         * System.out.println(String.format(OUTPUT_FORMAT, "Input (hex)",
-         * CryptoUtils.hex(encryptedText)));
-         * System.out.println(String.format(OUTPUT_FORMAT, "Input (hex) (block = 16)",
-         * CryptoUtils.hexWithBlockSize(encryptedText, 16)));
-         * System.out.println(String.format(OUTPUT_FORMAT, "Key (hex)",
-         * CryptoUtils.hex(secretKey.getEncoded())));
-         * 
-         * String decryptedText = AesGcm.decryptWithPrefixIV(encryptedText, secretKey);
-         * System.out.println(String.format(OUTPUT_FORMAT, "Decrypted (plain text)",
-         * decryptedText));
+        while (!sc.hasNextInt())
+            sc.next();
+        int num2 = sc.nextInt();
+        String selected = FileUtils.getSpesificLine(num2);
+        System.out.println("Selected Line : "+ selected);
 
-
-        byte[] key = Bytes.toBytes("1234567890123456");
         try {
             AesCtr cip = new AesCtr(key);
 
-            byte[] originalData = Bytes.toBytes("Do you think it's air that you breath?");
+            if (num1 == 1) { // encrypt
+                byte[] originalData = Bytes.toBytes(selected);
+                System.out.println("Original Data: ");
+                System.out.println(new String(originalData, UTF_8));
+                byte[] encData = cip.encrypt(originalData, iv);
+                System.out.println("Encrypted Data: ");
+                // printArray(encData);
+                System.out.println(new String(encData, UTF_8));
+            } else { // decrypt
 
-            System.out.println("Original Data: ");
-            // printArray(originalData);
-            System.out.println(new String(originalData));
+                List<String> line = FileUtils.getLineAsList(selected);
+                // selected line ikiye bolmemiz lazim
+                // ikinci kolonu decript edip
+                // ilk kolon ile karsilastirmamiz lazim
 
-            byte[] encData = cip.encrypt(originalData);
+                if( line.size() == 2 ) {
+                    byte[] decData = cip.decrypt(Bytes.toBytes(line.get(1)));
+                    byte[] bytesStr  = Bytes.toBytes(line.get(0));
 
-            System.out.println("Encrypted Data: ");
-            // printArray(encData);
-            System.out.println(new String(encData, UTF_8));
+                    System.out.println("Decrypted Data: ");
+                    System.out.println(new String(decData));
+                    if (!Arrays.equals(bytesStr, decData)) {
+                        throw new Exception(
+                                "AesCtr encryption decryption mechanism failed. Data changes after encryption and decryption!!");
+                    }
+                } else {
 
-            byte[] decData = cip.decrypt(encData);
-
-            System.out.println("Decrypted Data: ");
-            // printArray(decData);
-            System.out.println(new String(decData));
-            if (!Arrays.equals(originalData, decData)) {
-                throw new Exception(
-                        "AesCtr encryption decryption mechanism failed. Data changes after encryption and decryption!!");
+                    System.out.println("There is not a decrypted data ");
+                    return;
+                }
             }
         } catch (Exception e) {
             throw new Exception("AesCtr encrypt test failed.");
         }
-        */
     }
 
 }
