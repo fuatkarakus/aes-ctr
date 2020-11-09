@@ -18,7 +18,6 @@ public class Main {
         byte[] key = Bytes.toBytes("1234567890123456");
         byte[] iv  = Bytes.toBytes("asdfghjklzxcvbnm"); // should be random
 
-
         Scanner sc = new Scanner(System.in);
         System.out.println("Welcome to Cryptography! \n");
         System.out.println("Hello World AES-CTR ");
@@ -46,6 +45,9 @@ public class Main {
                 System.out.println("Encrypted Data: ");
                 // printArray(encData);
                 System.out.println(new String(encData, UTF_8));
+
+                // TODO should append new coloumn to csv file
+
             } else { // decrypt
 
                 List<String> line = FileUtils.getLineAsList(selected);
