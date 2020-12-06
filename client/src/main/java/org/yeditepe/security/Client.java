@@ -10,7 +10,7 @@ import java.util.Scanner;
 
 import static org.yeditepe.security.cipher.AesGcm.UTF_8;
 
-public class Main {
+public class Client {
 
     public static void printArray(byte[] arr)
     {
