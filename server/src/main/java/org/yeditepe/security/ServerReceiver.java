@@ -26,7 +26,7 @@ public class ServerReceiver {
 
     private static final int PORT = 8080;
 
-    public static void main(String[] args) throws Exception {
+    public static void execute( ) throws Exception {
 
         System.out.println("The server is running.");
         ServerSocket listener = new ServerSocket(PORT);

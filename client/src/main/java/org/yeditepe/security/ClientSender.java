@@ -42,11 +42,13 @@ public class ClientSender {
         tempByteStream.writeTo(out);
     }
 
-    private static boolean sendFile(byte[] publicKey, byte[] aesKey, File file)
-            throws FileNotFoundException, IOException, GeneralSecurityException {
+    private static boolean sendFile(byte[] publicKey, byte[] aesKey, File file) throws IOException, GeneralSecurityException {
+
         Socket socket = new Socket(hostName, portNumber);
+
         BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream());
         BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
+
         // send header and encrypted AES. AES is encrypted using private RSA key.
         out.write("FILE TRANSFER\n\n".getBytes("ASCII"));
         sendEcryptedAesKEY(out,publicKey,aesKey);
