@@ -4,9 +4,15 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.yeditepe.security.cipher.AesCtr;
 import org.yeditepe.security.utils.Utils;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 import static org.yeditepe.security.cipher.AesGcm.UTF_8;
 
@@ -20,6 +26,14 @@ public class Client {
     }
     public static void main(String[] args) throws Exception {
 
+        File clearmsg = Utils.getBook();
+        try (Stream<String> stream = Files.lines(Paths.get(clearmsg.getAbsolutePath()))) {
+             stream.forEach(System.out::println);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        /*
         // 16 bits secret key
         byte[] key = Bytes.toBytes("1234567890123456");
         byte[] iv  = Bytes.toBytes("asdfghjklzxcvbnm"); // should be random
@@ -83,7 +97,7 @@ public class Client {
                     return;
                 }
             }
-
+*/
     }
 
 }

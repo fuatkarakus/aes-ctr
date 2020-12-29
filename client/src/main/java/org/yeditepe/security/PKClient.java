@@ -11,7 +11,7 @@ public class PKClient
 {
     public static final int kBufferSize = 8192;
 
-    public static void main(String[] args) {
+    public static void somemain(String[] args) {
         try {
             // Generate new key
             KeyPair keyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();

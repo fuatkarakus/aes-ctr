@@ -27,8 +27,8 @@ public class Utils {
     public static final String PROJECT_DIR = System.getProperty("user.dir");
     public static final String BASE_DIR = "/Users/fuatkarakus/dev/IdeaProjects";
     public static final String CSV = "result.csv";
-    public static final String SEPERATOR = ">";
-    public static final char SEPERATOR_CHAR = '>';
+    public static final String SEPARATOR = ">";
+    public static final char SEPARATOR_CHAR = '>';
 
     public static File getBook() {
         return new File(Objects.requireNonNull(Utils.class.getClassLoader().getResource(BOOK)).getPath());
@@ -54,18 +54,24 @@ public class Utils {
         File book = getBook();
 
         byte[] block = new byte[16];
+
         List<String[]> dataLines = new ArrayList<>();
-        try (FileInputStream fis = new FileInputStream(book);
-             PrintWriter pw = new PrintWriter(new File(CSV))) {
+
+        try (FileInputStream fis = new FileInputStream(book); PrintWriter pw = new PrintWriter(new File(CSV))) {
 
             int name = 1;
             while ((fis.read(block)) != -1) {
+
                 List<String> csvLine = new ArrayList<>();
+
                 String strBlock = new String(block, UTF_8);
-                // csvLine.add(String.valueOf(name));
+
                 csvLine.add(strBlock);
+
                 name = name + 1;
+
                 String[] strings = csvLine.stream().toArray(String[]::new);
+
                 dataLines.add(strings);
             }
 
@@ -85,7 +91,7 @@ public class Utils {
     }
 
     public static List<String> getLineAsList(String str) {
-        return Stream.of(str.split(SEPERATOR, -1))
+        return Stream.of(str.split(SEPARATOR, -1))
                 .collect(Collectors.toList());
     }
 
@@ -101,7 +107,7 @@ public class Utils {
     }
 
     public static String convertToCSV(String[] data) {
-        return Stream.of(data).map(i -> escapeSpecialCharacters(i)).collect(Collectors.joining(SEPERATOR));
+        return Stream.of(data).map(i -> escapeSpecialCharacters(i)).collect(Collectors.joining(SEPARATOR));
     }
 
     public static String escapeSpecialCharacters(String data) {
@@ -173,12 +179,12 @@ public class Utils {
 
         // Read existing file
         List<String[]> csvBody;
-        try (CSVReader reader = new CSVReader(new FileReader(inputFile), SEPERATOR_CHAR)) {
+        try (CSVReader reader = new CSVReader(new FileReader(inputFile), SEPARATOR_CHAR)) {
             csvBody = reader.readAll();
             // get CSV row column  and replace with by using row and column
             csvBody.get(row)[col] = replace;
             reader.close();
-            CSVWriter writer = new CSVWriter(new FileWriter(inputFile), SEPERATOR_CHAR);
+            CSVWriter writer = new CSVWriter(new FileWriter(inputFile), SEPARATOR_CHAR);
             writer.writeAll(csvBody);
             writer.flush();
             writer.close();

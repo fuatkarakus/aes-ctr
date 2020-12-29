@@ -54,7 +54,7 @@ public class PKServer {
         }
         return strbuf.toString();
     }
-    public static void main(String[] args) throws Exception
+    public static void somemain(String[] args) throws Exception
     {
         int port = 7999;
         ServerSocket server = new ServerSocket(port);
