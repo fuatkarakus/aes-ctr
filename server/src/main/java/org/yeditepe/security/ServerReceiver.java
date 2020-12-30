@@ -95,9 +95,11 @@ public class ServerReceiver {
             Cipher aesCipher = Cipher.getInstance("AES");
             SecretKeySpec aeskeySpec = new SecretKeySpec(aesKey, "AES");
             aesCipher.init(Cipher.DECRYPT_MODE, aeskeySpec);
+
             CipherInputStream cipherInputStream = new CipherInputStream(in, aesCipher);
             String fileName = scanLineFromCipherStream(cipherInputStream);
             String fileSize = scanLineFromCipherStream(cipherInputStream);
+
             File receivedFile = new File(fileName.toString());
             FileOutputStream foStream = new FileOutputStream(receivedFile);
             ProtocolUtilities.sendBytes(cipherInputStream, foStream, Long.parseLong(fileSize));

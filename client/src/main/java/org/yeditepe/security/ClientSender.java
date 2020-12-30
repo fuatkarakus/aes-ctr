@@ -32,13 +32,22 @@ public class ClientSender {
 
     private static void sendEcryptedAesKEY(OutputStream out, byte[] publicKey,byte[] aesKey)
             throws GeneralSecurityException, IOException {
+
+        // initiate public key cipher
         Cipher pkCipher = Cipher.getInstance("RSA");
         PublicKey pk = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(publicKey));
         pkCipher.init(Cipher.ENCRYPT_MODE, pk);
+
         ByteArrayOutputStream tempByteStream = new ByteArrayOutputStream();
+
+        // create out stream encrypted with public key cipher
         CipherOutputStream cipherStream = new CipherOutputStream(tempByteStream, pkCipher);
+
+        // write aes key to that stream
         cipherStream.write(aesKey);
         cipherStream.close();
+
+        // send over socket
         tempByteStream.writeTo(out);
     }
 
@@ -55,14 +64,19 @@ public class ClientSender {
         // Encrypt the name of the file and its size using AES and send it over the socket
         String fileNameAndSize = new String(file.getName()  + "\n" + file.length() + "\n");
         ByteArrayInputStream fileInfoStream = new ByteArrayInputStream(fileNameAndSize.getBytes("ASCII"));
+
         SecretKeySpec aeskeySpec = new SecretKeySpec(aesKey, "AES");
         Cipher aesCipher = Cipher.getInstance("AES");
         aesCipher.init(Cipher.ENCRYPT_MODE, aeskeySpec);
         CipherOutputStream cipherOutStream = new CipherOutputStream(out, aesCipher);
+
         ProtocolUtilities.sendBytes(fileInfoStream,cipherOutStream);
+
         // send the the actual file itself and append some bytes so cipher would know it's the end of the file
         FileInputStream fileStream = new FileInputStream(file);
+
         ProtocolUtilities.sendBytes(fileStream,cipherOutStream);
+
         out.write(aesCipher.doFinal());
         out.write("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n".getBytes("ASCII"));
         out.flush();
