@@ -20,6 +20,8 @@ public class Server {
     }
     public static void main(String[] args) throws Exception {
 
+        ServerSender.execute();
+        /*
         // 16 bits secret key
         byte[] key = Bytes.toBytes("1234567890123456");
         byte[] iv  = Bytes.toBytes("asdfghjklzxcvbnm"); // should be random
@@ -83,6 +85,8 @@ public class Server {
                     return;
                 }
             }
+
+         */
 
     }
 

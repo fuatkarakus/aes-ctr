@@ -26,6 +26,9 @@ public class Client {
     }
     public static void main(String[] args) throws Exception {
 
+        ClientReceiver.execute();
+
+        /*
         File clearmsg = Utils.getBook();
         try (Stream<String> stream = Files.lines(Paths.get(clearmsg.getAbsolutePath()))) {
              stream.forEach(System.out::println);
@@ -33,6 +36,9 @@ public class Client {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+         */
+
         /*
         // 16 bits secret key
         byte[] key = Bytes.toBytes("1234567890123456");

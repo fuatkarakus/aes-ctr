@@ -81,7 +81,7 @@ public class ProtocolUtilities {
             pipeline.remove(0); // keep track of only the recent 2 bytes
         }
         if (header.length() == 0) return null;
-        ArrayList<String> headerParts = new ArrayList<String>();
+        ArrayList<String> headerParts = new ArrayList<>();
         Scanner scanner = new Scanner(header.toString());
         scanner.useDelimiter("\n");
         while (scanner.hasNext()) {

@@ -3,15 +3,16 @@ package org.yeditepe.security.utils;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,6 +33,10 @@ public class Utils {
 
     public static File getBook() {
         return new File(Objects.requireNonNull(Utils.class.getClassLoader().getResource(BOOK)).getPath());
+    }
+
+    public static String getFileName() {
+        return getBook().getName();
     }
 
     public static void writeToFile(String filePath, String data) throws IOException {
@@ -87,6 +92,52 @@ public class Utils {
     public static List<String> getLineAsList(String str) {
         return Stream.of(str.split(SEPERATOR, -1))
                 .collect(Collectors.toList());
+    }
+
+    public static InputStream convertObjectToInputStream(List<String> list ) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // ObjectOutputStream oos = new ObjectOutputStream(baos);
+
+        list.forEach(i -> {
+            try {
+                baos.write(i.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        baos.flush();
+        baos.close();
+
+        return new ByteArrayInputStream(baos.toByteArray());
+    }
+
+    public static long getSizeOfByte(List<String> list) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // ObjectOutputStream oos = new ObjectOutputStream(baos);
+
+        list.forEach(i -> {
+            try {
+                baos.write(i.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        baos.flush();
+        baos.close();
+        return baos.toByteArray().length;
+    }
+
+    public static List<String> convertFileToList() throws IOException {
+        File clearmsg = Utils.getBook();
+        Stream<String> stream = Files.lines(Paths.get(clearmsg.getAbsolutePath()));
+        List<String> route = stream.filter(i -> !i.equals("")).collect(Collectors.toList());
+        stream.close();
+
+        route.remove(0);
+
+        return route;
     }
 
     public static String getSize(){
