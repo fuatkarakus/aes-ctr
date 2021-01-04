@@ -179,18 +179,16 @@ public class ClientReceiver {
 
     private static boolean receiveSpecificFile(byte[] aesKey, byte[] publicKey, List<Integer> miss) throws GeneralSecurityException, IOException, ClassNotFoundException {
 
-        String missingFiles = miss.stream().map(String::valueOf).collect(Collectors.joining(",")) + "\n";
+        String missingFiles = miss.stream().map(String::valueOf).collect(Collectors.joining(","));
 
         Socket socket = new Socket(hostName, portNumber);
 
         BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream()); // giden
         BufferedInputStream in = new BufferedInputStream(socket.getInputStream()); // gelen
 
-        out.write( Command.SEND_PARTS_HEADER.getBytes(StandardCharsets.UTF_8));
+        out.write( (Command.SEND_PARTS + "\n"+ missingFiles +  "\n\n").getBytes(StandardCharsets.UTF_8));
         sendEncryptedAesKEY(out,publicKey,aesKey);
-        sendWhichFileToWant(out,aesKey,missingFiles.getBytes());
         out.flush();
-
 
         Cipher aesCipher = Cipher.getInstance("AES");
         SecretKeySpec aeskeySpec = new SecretKeySpec(aesKey, "AES");

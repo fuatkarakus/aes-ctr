@@ -158,21 +158,17 @@ public class ServerSender {
 
         }
 
-        private void sendRequestedFiles(byte[] aesKey) throws IOException, GeneralSecurityException {
+        private void sendRequestedFiles(byte[] aesKey, String missing) throws IOException, GeneralSecurityException {
 
             List<File> fileList = Utils.getParts();
 
             SecretKeySpec aeskeySpec = new SecretKeySpec(aesKey, "AES");
             Cipher aesCipher = Cipher.getInstance("AES");
-            Cipher decyript = Cipher.getInstance("AES");
             aesCipher.init(Cipher.ENCRYPT_MODE, aeskeySpec);
-            decyript.init(Cipher.DECRYPT_MODE, aeskeySpec);
+
             CipherOutputStream cipherOutStream = new CipherOutputStream(out, aesCipher);
 
-            CipherInputStream cipherInputStream = new CipherInputStream(in, decyript);
-
-            String requestedFiles = scanLineFromCipherStream(cipherInputStream);
-            List<String> items= Stream.of(requestedFiles.split(","))
+            List<String> items= Stream.of(missing.split(","))
                     .map(String::trim)
                     .collect(Collectors.toList());
 
@@ -203,11 +199,15 @@ public class ServerSender {
         @SneakyThrows
         public void run() {
             String command;
+            String second = null;
             try {
                 in = new BufferedInputStream(socket.getInputStream());
                 out = new BufferedOutputStream(socket.getOutputStream());
                 ArrayList<String> headerParts = ProtocolUtilities.consumeAndBreakHeader(in);
                 command = headerParts.get(0);
+                if (headerParts.size() > 1) {
+                    second = headerParts.get(1);
+                }
                 System.out.println(command);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -279,7 +279,7 @@ public class ServerSender {
 
                         System.out.println("Starting to file transfer...");
 
-                        sendRequestedFiles( aesKey2 );
+                        sendRequestedFiles( aesKey2 , second);
 
                         System.out.println("Requested specific file sent...");
 
