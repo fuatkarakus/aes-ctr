@@ -29,11 +29,22 @@ public class ServerSender {
 
         System.out.println("The server is running.");
 
+        Scanner ss = new Scanner(System.in);
+        System.out.println("Do you want to un-send some parts ? y or n");
+
+        boolean doNotSend = false;
+        String s = ss.nextLine();
+        if (s == "y") {
+            doNotSend = true;
+        } else if (s == "n") {
+            doNotSend = false;
+        }
+
         ServerSocket listener = new ServerSocket(PORT);
 
         try {
            while (true) {
-                new Handler(listener.accept()).start();
+                new Handler(listener.accept(), doNotSend).start();
            }
 
         } finally {
@@ -43,6 +54,7 @@ public class ServerSender {
 
     private static class Handler extends Thread {
         private Socket socket;
+        private boolean doNotSend;
         private InputStream in;
         private OutputStream out;
         public byte[] aesKey;
@@ -192,8 +204,9 @@ public class ServerSender {
 
         }
 
-        public Handler(Socket socket) {
+        public Handler(Socket socket, boolean doNotSend) {
             this.socket = socket;
+            this.doNotSend = doNotSend;
         }
 
         @SneakyThrows
