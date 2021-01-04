@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -93,7 +95,7 @@ public class ServerSender {
             return line.toString();
         }
 
-        private void sendFile(byte[] aesKey, List<String> send, String name, String size) throws IOException, GeneralSecurityException {
+        private void sendString(byte[] aesKey, List<String> send, String name, String size) throws IOException, GeneralSecurityException {
 
             //  InputStream willSend = Utils.convertObjectToInputStream(send);
             // Encrypt the name of the file and its size using AES and send it over the socket
@@ -107,12 +109,83 @@ public class ServerSender {
             CipherOutputStream cipherOutStream = new CipherOutputStream(out, aesCipher);
 
             ProtocolUtilities.sendBytes(fileInfoStream,cipherOutStream);
-
+            System.out.println(send.get(52161));
             // send the the hashmap
             // send line by line
             for (String str : send) {
                 str = str + "\n";
                 ProtocolUtilities.sendBytes( new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8)), cipherOutStream) ;
+            }
+
+            out.write(aesCipher.doFinal());
+            //out.write("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n".getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            // ArrayList<String> clientResponse = ProtocolUtilities.consumeAndBreakHeader(in);
+            socket.close();
+
+        }
+        private void sendFile(byte[] aesKey, List<String> send, String name, String size) throws IOException, GeneralSecurityException {
+
+            //  InputStream willSend = Utils.convertObjectToInputStream(send);
+            // Encrypt the name of the file and its size using AES and send it over the socket
+            List<File> fileList = Utils.getParts();
+            SecretKeySpec aeskeySpec = new SecretKeySpec(aesKey, "AES");
+            Cipher aesCipher = Cipher.getInstance("AES");
+            aesCipher.init(Cipher.ENCRYPT_MODE, aeskeySpec);
+            CipherOutputStream cipherOutStream = new CipherOutputStream(out, aesCipher);
+
+            String totalFile = fileList.size() + "\n";
+            ByteArrayInputStream strasdl = new ByteArrayInputStream(totalFile.getBytes(StandardCharsets.UTF_8));
+            // önce kaç tane dosya göndereceğimizi gönder
+            ProtocolUtilities.sendBytes(strasdl,cipherOutStream);
+
+            for (File file : fileList) {
+
+                String fileNameAndSize = file.getName() + "\n" + file.length() + "\n";
+                ByteArrayInputStream fileInfoStream = new ByteArrayInputStream(fileNameAndSize.getBytes(StandardCharsets.UTF_8));
+                // Dosya bilgilerini gönderiyoruz.
+                ProtocolUtilities.sendBytes(fileInfoStream,cipherOutStream);
+
+                FileInputStream fileStream = new FileInputStream(file);
+                ProtocolUtilities.sendBytes(fileStream,cipherOutStream);
+            }
+
+            out.write(aesCipher.doFinal());
+            out.write("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n".getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            // ArrayList<String> clientResponse = ProtocolUtilities.consumeAndBreakHeader(in);
+            socket.close();
+
+        }
+
+        private void sendRequestedFiles(byte[] aesKey) throws IOException, GeneralSecurityException {
+
+            List<File> fileList = Utils.getParts();
+
+            SecretKeySpec aeskeySpec = new SecretKeySpec(aesKey, "AES");
+            Cipher aesCipher = Cipher.getInstance("AES");
+            Cipher decyript = Cipher.getInstance("AES");
+            aesCipher.init(Cipher.ENCRYPT_MODE, aeskeySpec);
+            decyript.init(Cipher.DECRYPT_MODE, aeskeySpec);
+            CipherOutputStream cipherOutStream = new CipherOutputStream(out, aesCipher);
+
+            CipherInputStream cipherInputStream = new CipherInputStream(in, decyript);
+
+            String requestedFiles = scanLineFromCipherStream(cipherInputStream);
+            List<String> items= Stream.of(requestedFiles.split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toList());
+
+            for (File file : fileList) {
+                if (items.stream().anyMatch(i -> file.getName().contains(i))) {
+                    String fileNameAndSize = file.getName() + "\n" + file.length() + "\n";
+                    ByteArrayInputStream fileInfoStream = new ByteArrayInputStream(fileNameAndSize.getBytes(StandardCharsets.UTF_8));
+                    // Dosya bilgilerini gönderiyoruz.
+                    ProtocolUtilities.sendBytes(fileInfoStream,cipherOutStream);
+
+                    FileInputStream fileStream = new FileInputStream(file);
+                    ProtocolUtilities.sendBytes(fileStream,cipherOutStream);
+                }
             }
 
             out.write(aesCipher.doFinal());
@@ -196,7 +269,30 @@ public class ServerSender {
                     }
                     break;
                 case Command.SEND_PARTS:
-                    // TODO
+                    System.out.println("Client request for specific files.....");
+                    try {
+                        // ilk önce aes key okuyor.
+                        byte[] aesKey2 = readAndDecryptAesKey(privateRsaKey);
+
+                        System.out.println("Session KEY received...");
+                        System.out.println(Arrays.toString(aesKey2));
+
+                        System.out.println("Starting to file transfer...");
+
+                        sendRequestedFiles( aesKey2 );
+
+                        System.out.println("Requested specific file sent...");
+
+                    } catch (GeneralSecurityException e) {
+                        e.printStackTrace();
+                        sendErrorMessage("Failed to decrypt AES key and/or file content.");
+                        System.err.println("Server failed to decrypt AES key and/or file content.");
+                        return;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        System.err.println("Connection to client dropped.");
+                        return;
+                    }
 
                     break;
                 default:

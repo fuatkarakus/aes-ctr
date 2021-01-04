@@ -17,5 +17,6 @@ public class Command {
     public static final String SESSION_KEY_TRANSFER_HEADER = SESSION_KEY_TRANSFER + DELIMITER;
     public static final String  SEND_SIZE_HEADER = SEND_SIZE + DELIMITER;
     public static final String  SEND_FILE_HEADER = SEND_FILE + DELIMITER;
+    public static final String  SEND_PARTS_HEADER = SEND_PARTS + DELIMITER;
 
 }
