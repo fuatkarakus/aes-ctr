@@ -218,14 +218,18 @@ public class ClientReceiver {
 
     public static List<Integer> isSuccess(int total) {
         File[] files  = new File(".").listFiles();
+        List<Integer> sucess = new ArrayList<>(Arrays.asList(1,2,3,4)) ;
         List<String> fileNames = Arrays.stream(files).map(File::getName).collect(Collectors.toList());
         List<Integer> missingFiles = new ArrayList<>();
-        for (int i = 1; i < total; i++ ) {
-            if (!fileNames.contains("part00"+i)) {
-                 missingFiles.add(i);
+        for (int i = 1; i < total + 1; i++ ) {
+            int finalI = i;
+            Optional<String> matching = fileNames.stream().filter(f -> f.contains("part00" + finalI)).findFirst();
+            if (matching.isPresent()) {
+                missingFiles.add(i);
             }
         }
-        return missingFiles;
+        sucess.removeAll(missingFiles);
+        return  sucess;
     }
 
     public static void execute() throws IOException {
@@ -241,15 +245,15 @@ public class ClientReceiver {
 
             secretAesKey = generateAesKey();
             // iv = generateIV();
-/*
+
+            int totalFiles = 4;
             int isSuccessful = receiveFile(secretAesKey, publicRsaKey); // burada socket açıyor
 
-            List<Integer> miss = isSuccess(isSuccessful);
+            List<Integer> miss = isSuccess(totalFiles);
 
-             */
-            List<Integer> miss = Arrays.asList(2);
+            //List<Integer> miss = Arrays.asList(2);
 
-            if (miss.size() == 0) {
+            if (totalFiles == miss.size()) {
                 System.out.println("All files are received");
             } else {
                 System.out.println("Requesting missing files ... ");

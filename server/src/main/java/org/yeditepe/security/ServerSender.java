@@ -26,17 +26,16 @@ public class ServerSender {
     private static final int PORT = 8080;
 
     public static void execute() throws Exception {
+        Scanner ss = new Scanner(System.in);
+        System.out.println("Do you want to un-send some parts ? y or n");
+        boolean doNotSend = false;
+        String s = ss.nextLine();
 
         System.out.println("The server is running.");
 
-        Scanner ss = new Scanner(System.in);
-        System.out.println("Do you want to un-send some parts ? y or n");
-
-        boolean doNotSend = false;
-        String s = ss.nextLine();
-        if (s == "y") {
+        if (s.equals("y")) {
             doNotSend = true;
-        } else if (s == "n") {
+        } else if (s.equals("n")) {
             doNotSend = false;
         }
 
@@ -136,11 +135,16 @@ public class ServerSender {
             socket.close();
 
         }
-        private void sendFile(byte[] aesKey, List<String> send, String name, String size) throws IOException, GeneralSecurityException {
+        private void sendFile(byte[] aesKey, boolean doNotSend) throws IOException, GeneralSecurityException {
 
             //  InputStream willSend = Utils.convertObjectToInputStream(send);
             // Encrypt the name of the file and its size using AES and send it over the socket
             List<File> fileList = Utils.getParts();
+            if (doNotSend) {
+                System.out.println("Some files deleted");
+                fileList.remove(0);
+                fileList.remove(1);
+            }
             SecretKeySpec aeskeySpec = new SecretKeySpec(aesKey, "AES");
             Cipher aesCipher = Cipher.getInstance("AES");
             aesCipher.init(Cipher.ENCRYPT_MODE, aeskeySpec);
@@ -154,6 +158,7 @@ public class ServerSender {
             for (File file : fileList) {
 
                 String fileNameAndSize = file.getName() + "\n" + file.length() + "\n";
+                System.out.println("File name and size : " + fileNameAndSize);
                 ByteArrayInputStream fileInfoStream = new ByteArrayInputStream(fileNameAndSize.getBytes(StandardCharsets.UTF_8));
                 // Dosya bilgilerini gönderiyoruz.
                 ProtocolUtilities.sendBytes(fileInfoStream,cipherOutStream);
@@ -187,6 +192,7 @@ public class ServerSender {
             for (File file : fileList) {
                 if (items.stream().anyMatch(i -> file.getName().contains(i))) {
                     String fileNameAndSize = file.getName() + "\n" + file.length() + "\n";
+                    System.out.println("File name and size : " + fileNameAndSize);
                     ByteArrayInputStream fileInfoStream = new ByteArrayInputStream(fileNameAndSize.getBytes(StandardCharsets.UTF_8));
                     // Dosya bilgilerini gönderiyoruz.
                     ProtocolUtilities.sendBytes(fileInfoStream,cipherOutStream);
@@ -252,22 +258,13 @@ public class ServerSender {
                         System.out.println("Session KEY received...");
                         System.out.println(Arrays.toString(aesKey));
 
-                        List<String> file = Utils.convertFileToList();
-
-                        String size = String.valueOf(file.size());
-
                         String name = Utils.getFileName();
 
                         System.out.println("Starting to file transfer...");
                         // sonra dosyayı gönderiyor
 
-                        System.out.println("Byte Size " + Utils.getSizeOfByte(file));
-                        sendFile( aesKey, file, name, size );
+                        sendFile( aesKey, doNotSend );
 
-                        // System.out.println("Is successfully sent : "  + isSuccessful);
-                        System.out.println("Name: " + name);
-                        System.out.println("Size:" + size);
-                        System.out.println("byte size "+ file.get(0));
                         System.out.println("File sent...");
 
                     } catch (GeneralSecurityException e) {
@@ -289,7 +286,7 @@ public class ServerSender {
 
                         System.out.println("Session KEY received...");
                         System.out.println(Arrays.toString(aesKey2));
-
+                        System.out.println("Requested files : " + second);
                         System.out.println("Starting to file transfer...");
 
                         sendRequestedFiles( aesKey2 , second);
